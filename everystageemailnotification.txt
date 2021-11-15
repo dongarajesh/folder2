@@ -1,0 +1,107 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('continuousdownload')
+        {
+        steps
+        {
+            script
+            {
+                try
+                {
+                    git 'https://github.com/intelliqittrainings/maven.git' 
+                }
+                catch(Exception e1)
+                {
+                    mail bcc: '', body: 'jenkins is unable to download the git code', cc: '', from: '', replyTo: '', subject: 'download failed', to: 'gitadmin@gmail.com'
+                
+                    exit(1)
+                }
+            
+                }
+                }
+            }
+        
+        
+        stage('continuousbuild')
+        {
+        steps
+        {
+           script
+           {
+               try
+               {
+                 sh 'mvn package'   
+               }
+               catch(Exception e2)
+               {
+                  mail bcc: '', body: 'jenkins is unable to create the artifact', cc: '', from: '', replyTo: '', subject: 'build failed', to: 'devteam@gmail.com' 
+               exit(1)
+               }
+           }
+        }
+        }
+        stage('continuousdeployment')
+        {
+        steps
+        {
+            script
+            {
+                try
+                {
+                  deploy adapters: [tomcat9(credentialsId: 'dc17a69e-f841-4647-9518-1b6e095edf42', path: '', url: 'http://172.31.17.209:8080')], contextPath: 'testapp1111', war: '**/*.war'   
+                }
+                catch(Exception e3)
+                {
+                 mail bcc: '', body: 'jenkins is unable to deploy the tomcat ', cc: '', from: '', replyTo: '', subject: 'deployment failed', to: 'middlewareteam@gmail.com'   
+                exit(1)
+                }
+                
+            }
+            }
+        }
+         stage('continuoustesting')
+        {
+        steps
+        {
+           script
+           {
+               try
+               {
+                    git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+            sh 'java -jar /home/ubuntu/.jenkins/workspace/declarativepipeline1/testing.jar'
+               }
+               catch(Exception e4)
+               {
+                   mail bcc: '', body: 'testing has been failed', cc: '', from: '', replyTo: '', subject: 'testing failed', to: 'testing@gmail.com'
+              exit(1)
+              }
+               
+               }
+           }
+        }
+        
+     stage('continuousdelivery')
+        {
+        steps
+        {
+            script
+            {
+                try
+                {
+                 deploy adapters: [tomcat9(credentialsId: 'dc17a69e-f841-4647-9518-1b6e095edf42', path: '', url: 'http://172.31.31.39:8080')], contextPath: 'prodapp1', war: '**/*.war'   
+                }
+                catch(Exception e5)
+                {
+                    mail bcc: '', body: 'delivery  has been failed', cc: '', from: '', replyTo: '', subject: 'delivery failed', to: 'testing@gmail.com'
+                }
+                }
+                }
+            }
+            
+       
+    }  
+        
+    }

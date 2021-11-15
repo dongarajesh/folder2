@@ -1,0 +1,51 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('continuousdownload')
+        {
+        steps
+        {
+            git 'https://github.com/intelliqittrainings/maven.git'
+        }
+        }
+        stage('continuousbuild')
+        {
+        steps
+        {
+            sh 'mvn package'
+        }
+        }
+        stage('continuousdeployment')
+        {
+        steps
+        {
+            deploy adapters: [tomcat9(credentialsId: 'dc17a69e-f841-4647-9518-1b6e095edf42', path: '', url: 'http://172.31.17.209:8080')], contextPath: 'testapp1111', war: '**/*.war'
+            
+         
+        }
+        }
+         stage('continuoustesting')
+        {
+        steps
+        {
+            git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+            sh 'java -jar /home/ubuntu/.jenkins/workspace/declarativepipeline1/testing.jar'
+            
+        }
+        }
+        
+    }
+    post
+    {
+        success
+        {
+            deploy adapters: [tomcat9(credentialsId: 'dc17a69e-f841-4647-9518-1b6e095edf42', path: '', url: 'http://172.31.31.39:8080')], contextPath: 'prodapp1', war: '**/*.war'
+        }
+        failure
+        {
+           mail bcc: '', body: 'jenkins has failed in ci-cd', cc: '', from: '', replyTo: '', subject: 'ci failed', to: 'delivery@gmail.com' 
+        }
+    }
+}
