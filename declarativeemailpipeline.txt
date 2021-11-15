@@ -1,4 +1,4 @@
-pipeline
+ pipeline
 {
     agent any
     stages
@@ -17,7 +17,7 @@ pipeline
             sh 'mvn package'
         }
         }
-        stage('continuousdeployment')
+        stage('continuousdeployment master')
         {
         steps
         {
